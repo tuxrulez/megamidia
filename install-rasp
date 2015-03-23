@@ -1,0 +1,4 @@
+mkdir -p /usr/local/radio/generos/comercial
+mkdir -p /usr/local/radio/generos/musical
+mkdir -p /var/log/radio
+mkdir -p /usr/local/scripts
