@@ -168,6 +168,9 @@ externo=`curl ifconfig.me`
 # Envia o arquivo de log para o server
 rsync -aq --timeout=180 --password-file=/etc/radio.update ${locate}/*.zip rsync://${rede}@${ip}:/${rede}_logs
 # Exclui os arquivos que estao no diretorio de log
+
+service ntp stop
+ntpdate $hora
 cp -a /var/log/radio/*audiencia* /var/log/temp_audiencia/
 rm -f /var/log/radio/*.zip
 rm -f ${audiencia}/*.txt

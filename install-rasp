@@ -1,4 +1,35 @@
+#!/bin/bash
+versao=`cat /etc/VERSAO`
+
 mkdir -p /usr/local/radio/generos/comercial
 mkdir -p /usr/local/radio/generos/musical
 mkdir -p /var/log/radio
 mkdir -p /usr/local/scripts
+
+cp -a aproveita_musicas.sh /usr/local/bin/
+cp -a gera_playlist.sh /usr/local/bin/
+cp -a limpa-log.sh /usr/local/bin/
+cp -a logs_hora.sh /usr/local/bin/
+cp -a log-status.sh /usr/local/bin/
+cp -a radio.sh /usr/local/bin/
+cp -a rede.sh /usr/bin/
+
+mysqladmin create radio_locucao
+mysql radio_locucao < radio_locucao.sql
+mysqladmin create radio
+mysql radio < radio.sql
+
+echo radio > /etc/radio.update
+chown root. /etc/radio.update
+chmod 0600 /etc/radio.update
+
+if [ $versao == "raspberry" ]; then
+	echo "$versao"
+	cp -a inittab-rasp /etc/inittab
+	cp -a rc.local-rasp /etc/rc.local
+	cp -a setup-rasp /usr/local/bin/setup.sh
+	cp -a radio-update.body-rasp /usr/local/etc/radio-update.body	
+
+else
+	echo $banana
+fi
