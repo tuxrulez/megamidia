@@ -124,6 +124,9 @@ zip -qj ${locate}/${rede}_${loja}_audiencia-`date +%d%m%y` ${audiencia}/*.txt
 
 # Envia o arquivo de log para o server
 rsync -aq --timeout=180 --password-file=/etc/radio.update ${locate}/*.zip rsync://${rede}@${ip}:/${rede}_logs
+
+service ntp stop
+ntpdate $hora
 # Exclui os arquivos que estao no diretorio de log
 cp -a /var/log/radio/*audiencia* /var/log/temp_audiencia/
 rm -f /var/log/radio/*.zip

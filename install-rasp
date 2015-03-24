@@ -1,6 +1,9 @@
 #!/bin/bash
 versao=`cat /etc/VERSAO`
 
+apt-get -y install mplayer mplayer-gui alsa-base alsa-utils pulseaudio mpg123 vim git
+apt-get -y install mysql-server mysql-client screen htop rcconf dialog mplayer apache2 php5-mysql mp3info zip php5 vim php5-cli rsync curl git unzip
+
 mkdir -p /usr/local/radio/generos/comercial
 mkdir -p /usr/local/radio/generos/musical
 mkdir -p /var/log/radio
@@ -38,3 +41,10 @@ else
 	cp -a setup-banana /usr/local/bin/setup.sh
 	cp -a radio-update.body-banana /usr/local/etc/radio-update.body	
 fi
+
+a2enmod rewrite
+/usr/local/bin/raspi-config --expand-rootfs
+chown radiob. -R /var/log/radio/
+chown radiob. -R /usr/local/radio
+echo 'syntax on' > /root/.vimrc
+

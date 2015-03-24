@@ -588,10 +588,9 @@ Tem CERTEZA de que as informacoes estao TODAS corretas?" 9 59
 			    echo "10 * * * * root /usr/local/bin/trata.sh" >> /usr/local/etc/crontab
 			    echo "00 00 * * * root /usr/local/bin/limparadio.sh" >> /usr/local/etc/crontab
 			    echo "10 */1 * * * root /usr/local/bin/aproveita_musicas.sh" >> /usr/local/etc/crontab
-			    echo "*/10 * * * * root /usr/local/bin/muda-dns.sh" >> /usr/local/etc/crontab
 			    echo "" >> /usr/local/etc/crontab
 			    echo "# gera nova playlist" >> /usr/local/etc/crontab
-			    echo "01 0 * * * root /usr/local/bin/gera_playlist.sh > /dev/null" >> /usr/local/etc/crontab
+			    echo "01 03 * * * root /usr/local/bin/gera_playlist.sh > /dev/null" >> /usr/local/etc/crontab
 
 			    # Copia o arquivo criado para o local definitivo
 			    cp -pf /usr/local/etc/crontab /etc
@@ -611,8 +610,6 @@ Tem CERTEZA de que as informacoes estao TODAS corretas?" 9 59
 			ip_loja=`cat /etc/network/interfaces | grep address | cut -d' ' -f2`
 			ip_mask=`cat /etc/network/interfaces | grep netmask | cut -d' ' -f2`
 			ip_gateway=`cat /etc/network/interfaces |grep gateway | cut -d' ' -f2`
-			#ip_rede=`cat /etc/sysconfig/network/ifcfg-eth0 | grep NETWORK | cut -d'=' -f2`
-			#ip_broadcast=`cat /etc/sysconfig/network/ifcfg-eth0 | grep BROADCAST | cut -d'=' -f2`
 			hname=`cat /etc/hostname`
 			hora=`cat /etc/crontab | grep /usr/local/bin/radio-update.sh | cut -d' ' -f2`
 			minuto=`cat /etc/crontab | grep /usr/local/bin/radio-update.sh | cut -d' ' -f1`
