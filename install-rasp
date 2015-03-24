@@ -32,4 +32,9 @@ if [ $versao == "raspberry" ]; then
 
 else
 	echo $banana
+	echo "$versao"
+	cp -a inittab-banana /etc/inittab
+	cp -a rc.local-banana /etc/rc.local
+	cp -a setup-banana /usr/local/bin/setup.sh
+	cp -a radio-update.body-banana /usr/local/etc/radio-update.body	
 fi
