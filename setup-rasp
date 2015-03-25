@@ -375,8 +375,10 @@ __EOF__
 fi
 			    # Constroi o arquivo /usr/local/etc/network
 			    echo "$hname" > /usr/local/etc/HOSTNAME
-
-			    chmod 644 /usr/local/etc/HOSTNAME
+			    CURRENT_HOSTNAME=`cat /usr/local/etc/HOSTNAME | tr -d " \t\n\r"`
+			    CURRENT1_HOSTNAME=RadioIndoor
+			    echo $CURRENT_HOSTNAME > /etc/hostname
+			    sed -i "s/127.0.1.1.*$CURRENT1_HOSTNAME/127.0.1.1\t$CURRENT_HOSTNAME/g" /etc/hosts
 
 			    # Constroi o arquivo radio-update.sh
 			    echo -e "#!/bin/bash\n" > /usr/local/etc/radio-update.sh
