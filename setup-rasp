@@ -594,6 +594,7 @@ Tem CERTEZA de que as informacoes estao TODAS corretas?" 9 59
 			    echo "10 * * * * root /usr/local/bin/trata.sh" >> /usr/local/etc/crontab
 			    echo "00 00 * * * root /usr/local/bin/limparadio.sh" >> /usr/local/etc/crontab
 			    echo "10 */1 * * * root /usr/local/bin/aproveita_musicas.sh" >> /usr/local/etc/crontab
+			    echo "00 02 * * 3,5 root /usr/local/bin/radio-musical.sh" >> /usr/local/etc/crontab
 			    echo "" >> /usr/local/etc/crontab
 			    echo "# gera nova playlist" >> /usr/local/etc/crontab
 			    echo "01 03 * * * root /usr/local/bin/gera_playlist.sh > /dev/null" >> /usr/local/etc/crontab
