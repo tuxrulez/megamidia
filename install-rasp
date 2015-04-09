@@ -1,8 +1,7 @@
 #!/bin/bash
 versao=`cat /etc/VERSAO`
 
-apt-get -y install mplayer mplayer-gui alsa-base alsa-utils pulseaudio mpg123 vim git
-apt-get -y install mysql-server mysql-client screen htop rcconf dialog mplayer apache2 php5-mysql mp3info zip php5 vim php5-cli rsync curl git unzip
+apt-get -y install mplayer mplayer-gui alsa-base alsa-utils pulseaudio mpg123 vim git ntpdate mysql-server mysql-client screen htop rcconf dialog mplayer apache2 php5-mysql mp3info zip php5 vim php5-cli rsync curl git unzip 
 
 mkdir -p /usr/local/radio/generos/comercial
 mkdir -p /usr/local/radio/generos/musical
@@ -32,19 +31,28 @@ if [ $versao == "raspberry" ]; then
 	cp -a rc.local-rasp /etc/rc.local
 	cp -a setup-rasp /usr/local/bin/setup.sh
 	cp -a radio-update.body-rasp /usr/local/etc/radio-update.body	
+	/usr/local/bin/raspi-config --expand-rootfs
+fi
 
-else
+if [ $versao == "banana" ]; then
 	echo $banana
 	echo "$versao"
 	cp -a inittab-banana /etc/inittab
 	cp -a rc.local-banana /etc/rc.local
 	cp -a setup-banana /usr/local/bin/setup.sh
 	cp -a radio-update.body-banana /usr/local/etc/radio-update.body	
+	/usr/local/bin/raspi-config --expand-rootfs
 fi
 
+if [ $versao == "debian" ]; then
+	echo "$versao"
+	apt-get -y install mplayer2
+	cp -a inittab-debian /etc/inittab
+	cp -a rc.local-debian /etc/rc.local
+	cp -a setup-banana /usr/local/bin/setup.sh
+	cp -a radio-update.body-debian /usr/local/etc/radio-update.body	
+fi
 a2enmod rewrite
-/usr/local/bin/raspi-config --expand-rootfs
 chown radiob. -R /var/log/radio/
 chown radiob. -R /usr/local/radio
 echo 'syntax on' > /root/.vimrc
-
