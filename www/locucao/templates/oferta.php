@@ -47,6 +47,38 @@ echo "</pre>";
                     var produtos = <?php print json_encode($data['arquivos']->produtos); ?>;
                   </script>
                   <div id="produtos" class="col bottom-10">
+                    <?php
+                    $de_por = array();
+                    $de = array();
+                    $por = array();
+
+
+                    foreach ($arquivos->depor as $value) 
+                    {
+                        if($value->nome!="de" && $value->nome!="por")
+                        {
+                          $value->nome = "de X por Y ".$value->nome;
+                          $de_por[] = $value;
+                        }
+                        elseif ($value->nome=="por") {
+                          $value->nome = "de X por Y";
+                          $por[] = $value;
+                        }
+                        elseif ($value->nome=="de") {
+                          $de[] = $value;
+                        }
+                    }
+
+                    if(count($de)>0 && count($por)>0) //valida se existem os arquivos de e por, caso contrario nao mostra nada
+                    {
+                      $de_por = array_merge($por, $de_por);
+                    }
+                    else
+                    {
+                      $de_por = array();
+                    }
+                    ?>
+
                     <?php foreach ($oferta->sequencia->produtos as $key => $produto): ?>
 
                     <?php
@@ -77,7 +109,7 @@ echo "</pre>";
                           <div class="left-10">
                             <label for="zz_locucao_produto-<?php print $key; ?>">Selecione o produto desejado</label>
                             
-                            <select id="zz_locucao_produto-<?php print $key; ?>" name="zz_locucao_produto-<?php print $key; ?>" class="select2 produtos" data-placeholder="Selecione um produto">
+                            <select id="zz_locucao_produto-<?php print $key; ?>" name="zz_locucao_produto[<?php print $key; ?>]" class="select2 produtos" data-placeholder="Selecione um produto">
                               <option value="" label="nenhum"></option>
                               <?php
                               $locucao_produto = isset($produto->zz_locucao_produto)? $produto->zz_locucao_produto->nome: false;
@@ -113,98 +145,174 @@ echo "</pre>";
                         </div>
                       </div>
 
-                      <?php
-                      $parcelas = array();
+                      <div class="col preco">
 
-                      foreach ($arquivos->parcelamento as $value) 
-                      {
-                          $temp = explode(' ', $value->nome);
+                        <?php
+                        
 
-                          if(is_numeric($temp[0]) && count($temp)>1)
-                          {
-                            $parcelas[$temp[0]] = $value;
-                          }
-                      }
+                        $locucao_por = isset($produto->zz_locucao_por)? $produto->zz_locucao_por->arquivo: false;
+                        $locucao_deporextra = isset($produto->zz_locucao_deporextra)? $produto->zz_locucao_deporextra->arquivo: false;
 
-                      ksort($parcelas);
-                      ?>
+                        if($locucao_deporextra === false)
+                        {
+                          $locucao_deporextra = $locucao_por;
+                        }
+                        //print($locucao_de);
+                        ?>
+                        <div class="col width-1of4 de-por">
+
+                            <label for="zz_locucao_de_por-<?php print $key; ?>">De Por</label>
+                            <select id="zz_locucao_de_por-<?php print $key; ?>" class="select2 de-por">
+                              <option value="">Não</option>
+                              <?php foreach ($de_por as $arquivo): ?>
+                              <option value="<?php print $arquivo->arquivo; ?>" <?php if($locucao_por!==false && $locucao_por==$arquivo->arquivo) print 'selected';?>><?php print $arquivo->nome; ?></option>
+                              <?php endforeach; ?>
+                            </select>
+
+                        </div>
+                        <input type="hidden" id="zz_locucao_de-<?php print $key; ?>" name="zz_locucao_de-<?php print $key; ?>" value="" data-valor="<?php if(count($de)>0){print $de[0]->arquivo;} ?>" class="de"> 
+
+                        <?php
+                        $parcelas = array();
+
+                        foreach ($arquivos->parcelamento as $value) 
+                        {
+                            $temp = explode(' ', $value->nome);
+
+                            if(is_numeric($temp[0]) && count($temp)>1)
+                            {
+                              $parcelas[$temp[0]] = $value;
+                            }
+                        }
+
+                        ksort($parcelas);
+                        ?>
 
 
-                      <div class="col width-1of6 parcelamento">
+                        <div class="col width-1of6 parcelamento">
+                          <div class="left-10">
+                            <label for="zz_locucao_parcelamento-<?php print $key; ?>">Parcelas</label>
+                            <select id="zz_locucao_parcelamento-<?php print $key; ?>" name="zz_locucao_parcelamento-<?php print $key; ?>" class="select2">
+                              <option value="">1x de</option>
+                              <?php
+                              $locucao_parcelamento = isset($produto->zz_locucao_parcelamento)? $produto->zz_locucao_parcelamento->nome: false;
+                              ?>
+                              <?php foreach ($parcelas as $arquivo): ?>
+                              <option value="<?php print $arquivo->arquivo; ?>" <?php if($locucao_parcelamento!==false && $locucao_parcelamento==$arquivo->nome) print 'selected';?>><?php print str_replace(' vezes', 'x', $arquivo->nome); ?></option>
+                              <?php endforeach; ?>
+                            </select>
+                          </div>
+                        </div>
+                        <?php
+                        $preco_real = array();
+                        $preco_centavos = array();
 
-                          <label for="zz_locucao_parcelamento-<?php print $key; ?>">Parcelas</label>
-                          <select id="zz_locucao_parcelamento-<?php print $key; ?>" name="zz_locucao_parcelamento-<?php print $key; ?>" class="select2">
-                            <option value="">1x de</option>
-                            <?php
-                            $locucao_parcelamento = isset($produto->zz_locucao_parcelamento)? $produto->zz_locucao_parcelamento->nome: false;
-                            ?>
-                            <?php foreach ($parcelas as $arquivo): ?>
-                            <option value="<?php print $arquivo->arquivo; ?>" <?php if($locucao_parcelamento!==false && $locucao_parcelamento==$arquivo->nome) print 'selected';?>><?php print str_replace(' vezes', 'x', $arquivo->nome); ?></option>
-                            <?php endforeach; ?>
-                          </select>
+                        foreach ($arquivos->precos as $value) 
+                        {
+                            $temp = explode(' ', $value->nome);
 
-                      </div>
-                      <?php
-                      $preco_real = array();
-                      $preco_centavos = array();
+                            if(is_numeric($temp[0]) && count($temp)>1)
+                            {
+                                if(stristr($temp[1], 'rea')!==false)
+                                {
+                                    $preco_real[$temp[0]] = $value;
+                                }
+                                else if(stristr($value->arquivo, 'centavos.')!==false)
+                                {
+                                    $preco_centavos[$temp[0]] = $value;
+                                }
+                                else if(stristr($value->arquivo, 'centavo.')!==false)
+                                {
+                                    $preco_centavos[$temp[0]] = $value;
+                                }
+                            }
+                        }
 
-                      foreach ($arquivos->precos as $value) 
-                      {
-                          $temp = explode(' ', $value->nome);
+                        ksort($preco_real);
+                        ksort($preco_centavos);
+                        ?>
 
-                          if(is_numeric($temp[0]) && count($temp)>1)
-                          {
-                              if(stristr($temp[1], 'rea')!==false)
-                              {
-                                  $preco_real[$temp[0]] = $value;
-                              }
-                              else if(stristr($value->arquivo, 'centavos.')!==false)
-                              {
-                                  $preco_centavos[$temp[0]] = $value;
-                              }
-                              else if(stristr($value->arquivo, 'centavo.')!==false)
-                              {
-                                  $preco_centavos[$temp[0]] = $value;
-                              }
-                          }
-                      }
-
-                      ksort($preco_real);
-                      ksort($preco_centavos);
-                      ?>
-
-                      <div class="col width-1of4 real">
-                        <div class="left-10">
-                          <label for="preco-real-<?php print $key; ?>">Preço</label>
-                          <select id="preco-real-<?php print $key; ?>" name="preco-real-<?php print $key; ?>" class="select2">
-                            <option value="">Real</option>
-                            <?php
-                            $real = isset($produto->zz_locucao_preco_real)? $produto->zz_locucao_preco_real->nome: false;
-                            ?>
-                            <?php foreach ($preco_real as $arquivo): ?>
-                            <option value="<?php print $arquivo->arquivo; ?>" <?php if($real!==false && $real==$arquivo->nome) print 'selected';?>><?php print $arquivo->nome; ?></option>
-                            <?php endforeach; ?>
-                          </select>
+                        <div class="col width-1of4 real">
+                          <div class="left-10">
+                            <label for="preco-real-<?php print $key; ?>">Preço</label>
+                            <select id="preco-real-<?php print $key; ?>" name="preco-real-<?php print $key; ?>" class="select2">
+                              <option value="">Real</option>
+                              <?php
+                              $real = isset($produto->zz_locucao_preco_real)? $produto->zz_locucao_preco_real->nome: false;
+                              ?>
+                              <?php foreach ($preco_real as $arquivo): ?>
+                              <option value="<?php print $arquivo->arquivo; ?>" <?php if($real!==false && $real==$arquivo->nome) print 'selected';?>><?php print $arquivo->nome; ?></option>
+                              <?php endforeach; ?>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="col width-1of6 centavos">
+                          <div class="left-10">
+                            <label for="preco-centavos-<?php print $key; ?>">Centavos</label>
+                            <select id="preco-centavos-<?php print $key; ?>" name="preco-centavos-<?php print $key; ?>" class="select2">
+                              <option value="">Centavos</option>
+                              <?php
+                              $centavos = isset($produto->zz_locucao_preco_centavos)? $produto->zz_locucao_preco_centavos->nome: false;
+                              ?>
+                              <?php foreach ($preco_centavos as $arquivo): ?>
+                              <option value="<?php print $arquivo->arquivo; ?>" <?php if($centavos!==false && $centavos==$arquivo->nome) print 'selected';?>><?php print $arquivo->nome; ?></option>
+                              <?php endforeach; ?>
+                            </select>
+                          </div>
                         </div>
                       </div>
-                      <div class="col width-1of4 centavos">
-                        <div class="left-10">
-                          <label for="preco-centavos-<?php print $key; ?>">Centavos</label>
-                          <select id="preco-centavos-<?php print $key; ?>" name="preco-centavos-<?php print $key; ?>" class="select2">
-                            <option value="">Centavos</option>
-                            <?php
-                            $centavos = isset($produto->zz_locucao_preco_centavos)? $produto->zz_locucao_preco_centavos->nome: false;
-                            ?>
-                            <?php foreach ($preco_centavos as $arquivo): ?>
-                            <option value="<?php print $arquivo->arquivo; ?>" <?php if($centavos!==false && $centavos==$arquivo->nome) print 'selected';?>><?php print $arquivo->nome; ?></option>
-                            <?php endforeach; ?>
-                          </select>
+
+                      <div class="col row-de-por" style="display: none;">
+                        <input type="hidden" id="zz_locucao_por-<?php print $key; ?>" name="zz_locucao_por-<?php print $key; ?>" value="" data-valor="<?php if(count($por)>0){print $por[0]->arquivo;} ?>" class="por"> 
+                        <div class="col width-1of4 de-por">
+                          <span style="display: block; text-align: right; font-size: 14px; padding-top: 27px;">Por </span>
                         </div>
+                        <div class="col width-1of6 parcelamento">
+                          <div class="left-10">
+                            <label for="zz_locucao_parcelamento-<?php print $key; ?>-de_por">Parcelas</label>
+                            <select id="zz_locucao_parcelamento-<?php print $key; ?>-de_por" name="zz_locucao_parcelamento-<?php print $key; ?>-de_por" class="select2">
+                              <option value="">1x de</option>
+                              <?php
+                              $locucao_parcelamento = isset($produto->zz_locucao_parcelamento_depor)? $produto->zz_locucao_parcelamento_depor->nome: false;
+                              ?>
+                              <?php foreach ($parcelas as $arquivo): ?>
+                              <option value="<?php print $arquivo->arquivo; ?>" <?php if($locucao_parcelamento!==false && $locucao_parcelamento==$arquivo->nome) print 'selected';?>><?php print str_replace(' vezes', 'x', $arquivo->nome); ?></option>
+                              <?php endforeach; ?>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="col width-1of4 real">
+                          <div class="left-10">
+                            <label for="preco-real-<?php print $key; ?>-de_por">Preço</label>
+                            <select id="preco-real-<?php print $key; ?>-de_por" name="preco-real-<?php print $key; ?>-de_por" class="select2">
+                              <option value="">Real</option>
+                              <?php
+                              $real = isset($produto->zz_locucao_preco_real_depor)? $produto->zz_locucao_preco_real_depor->nome: false;
+                              ?>
+                              <?php foreach ($preco_real as $arquivo): ?>
+                              <option value="<?php print $arquivo->arquivo; ?>" <?php if($real!==false && $real==$arquivo->nome) print 'selected';?>><?php print $arquivo->nome; ?></option>
+                              <?php endforeach; ?>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="col width-1of6 centavos">
+                          <div class="left-10">
+                            <label for="preco-centavos-<?php print $key; ?>-de_por">Centavos</label>
+                            <select id="preco-centavos-<?php print $key; ?>-de_por" name="preco-centavos-<?php print $key; ?>-de_por" class="select2">
+                              <option value="">Centavos</option>
+                              <?php
+                              $centavos = isset($produto->zz_locucao_preco_centavos_depor)? $produto->zz_locucao_preco_centavos_depor->nome: false;
+                              ?>
+                              <?php foreach ($preco_centavos as $arquivo): ?>
+                              <option value="<?php print $arquivo->arquivo; ?>" <?php if($centavos!==false && $centavos==$arquivo->nome) print 'selected';?>><?php print $arquivo->nome; ?></option>
+                              <?php endforeach; ?>
+                            </select>
+                          </div>
+                        </div>
+                        <input type="hidden" id="zz_locucao_deporextra-<?php print $key; ?>" name="zz_locucao_deporextra-<?php print $key; ?>" value="" class="extra"> 
                       </div>
 
-                      <div class="col width-fill">
-                        <a class="remover" href="#">Remover<span class="icon icon-32 icon-remove-sign"></span></a>
-                      </div>
+                      <a class="remover" href="#">Remover<span class="icon icon-32 icon-remove-sign"></span></a>
 
                     </div>
                     <?php endforeach; ?>
@@ -375,7 +483,7 @@ echo "</pre>";
 
                   <div class="col bottom-20">
                     <button type="submit" class="button background-green"><span class="icon icon-ok"></span>Veicular</button>
-                    <a href="<?php print $_SESSION['baseUrl'].'/'; ?><?php if($data['oferta']->id>0) print 'programacao'; ?>" class="button">Cancelar</a>
+                    <a href="<?php print $_SESSION['baseUrl'].'/'; ?><?php if($data['oferta']->id>0) print 'programacao'; ?>" class="button cinza">Cancelar</a>
                   </div>
                 </div>
 

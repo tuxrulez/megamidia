@@ -32,9 +32,10 @@ $app->get('/oferta(/:id)', function($id=0) use ($app)
     $arquivos->parcelamento = lista_arquivos('zz_locucao_parcelamento');
     $arquivos->precos = lista_arquivos('zz_locucao_preco');
     $arquivos->repeticao = lista_arquivos('zz_locucao_repeticao');
+    $arquivos->depor = lista_arquivos('zz_locucao_depor');
 /*
     echo "<pre>";
-    print_r($arquivos->precos);
+    print_r($arquivos->depor);
     echo "</pre>";
     exit();
 */
@@ -101,6 +102,18 @@ $app->get('/oferta(/:id)', function($id=0) use ($app)
                     {
                         $sequencia->{$key} = trata_nome_arquivo($value);
                     }
+                    else if(strstr($key, 'zz_locucao_de-')!== false)
+                    {
+                        $sequencia->{$key} = trata_nome_arquivo($value);
+                    }
+                    else if(strstr($key, 'zz_locucao_por-')!== false)
+                    {
+                        $sequencia->{$key} = trata_nome_arquivo($value);
+                    }
+                    else if(strstr($key, 'zz_locucao_deporextra')!== false)
+                    {
+                        $sequencia->{$key} = trata_nome_arquivo($value);
+                    }
                     else if($key=='zz_locucao_fechamento')
                     {
                         $sequencia->{$key} = trata_nome_arquivo($value);
@@ -111,17 +124,14 @@ $app->get('/oferta(/:id)', function($id=0) use ($app)
                     }
                 }
 
-
-                
-                
                 $oferta->sequencia = $sequencia;
                 $oferta->sequencia->produtos = array();
-
-                //echo "<pre>";
-                //print_r($oferta);
-                //echo "</pre>";
-                //exit();
-
+/*
+                echo "<pre>";
+                print_r($oferta);
+                echo "</pre>";
+                exit();
+*/
                 foreach ($sequencia as $key => $value) 
                 {
                     if(strstr($key, 'zz_locucao_produto')!== false)
@@ -131,6 +141,7 @@ $app->get('/oferta(/:id)', function($id=0) use ($app)
 
                         $grupo = new StdClass();
                         $grupo->zz_locucao_produto = $value;
+                        $grupo->zz_locucao_de = isset($oferta->sequencia->{'zz_locucao_de'.$sufix})? $oferta->sequencia->{'zz_locucao_de'.$sufix}: null;
                         $grupo->zz_locucao_parcelamento = isset($oferta->sequencia->{'zz_locucao_parcelamento'.$sufix})? $oferta->sequencia->{'zz_locucao_parcelamento'.$sufix}: null;
                         //$grupo->{'zz_locucao_preco_real'} = $sequencia->{'preco-real'.$sufix};
                         //$grupo->{'zz_locucao_preco_centavos'} = $sequencia->{'preco-centavos'.$sufix};
@@ -149,6 +160,25 @@ $app->get('/oferta(/:id)', function($id=0) use ($app)
                             }
                         }
 
+                        $grupo->zz_locucao_por = isset($oferta->sequencia->{'zz_locucao_por'.$sufix})? $oferta->sequencia->{'zz_locucao_por'.$sufix}: null;
+                        $grupo->zz_locucao_parcelamento_depor = isset($oferta->sequencia->{'zz_locucao_parcelamento'.$sufix.'-de_por'})? $oferta->sequencia->{'zz_locucao_parcelamento'.$sufix.'-de_por'}: null;
+                        $grupo->{'zz_locucao_preco_real_depor'} = isset($oferta->sequencia->{'preco-real'.$sufix.'-de_por'})? $oferta->sequencia->{'preco-real'.$sufix.'-de_por'}: null;
+                        $grupo->{'zz_locucao_preco_centavos_depor'} = isset($oferta->sequencia->{'preco-centavos'.$sufix.'-de_por'})? $oferta->sequencia->{'preco-centavos'.$sufix.'-de_por'}: null;
+
+                        if($grupo->{'zz_locucao_preco_centavos_depor'} !== null)
+                        {
+                            $centavos = $grupo->{'zz_locucao_preco_centavos_depor'};
+                            if(strstr($centavos->arquivo, '_sem_e')!==false)
+                            {
+                                $centavos->arquivo = str_replace('_sem_e', '', $centavos->arquivo);
+                                $centavos->nome = str_replace('_sem_e', '', $centavos->nome);
+
+                                $grupo->{'zz_locucao_preco_centavos_depor'} = $centavos;
+                            }
+                        }
+
+                        $grupo->zz_locucao_deporextra = isset($oferta->sequencia->{'zz_locucao_deporextra'.$sufix})? $oferta->sequencia->{'zz_locucao_deporextra'.$sufix}: null;
+
                         $oferta->sequencia->produtos[] = $grupo;
                     }
                 }
@@ -158,8 +188,6 @@ $app->get('/oferta(/:id)', function($id=0) use ($app)
                 echo "</pre>";
                 exit();
                 */
-
-
                 $oferta->data_inicio = date("d/m/Y", strtotime($oferta->data_inicio));
                 $oferta->data_fim = date("d/m/Y", strtotime($oferta->data_fim));
 
@@ -282,6 +310,33 @@ $app->post('/oferta', function() use ($app)
             
             $sequencia_produtos[] = $r;
         }
+        else if (strstr($key, 'zz_locucao_de-')!== false) 
+        {
+            $r = new StdClass();
+            $r->fild = $key;
+            $r->genero = 'zz_locucao_depor';
+            $r->sequencia = 'zz_locucao_depor';
+            $r->arquivo = $app->request()->post($key);
+            $sequencia_produtos[] = $r;
+        }
+        else if (strstr($key, 'zz_locucao_por-')!== false) 
+        {
+            $r = new StdClass();
+            $r->fild = $key;
+            $r->genero = 'zz_locucao_depor';
+            $r->sequencia = 'zz_locucao_depor';
+            $r->arquivo = $app->request()->post($key);
+            $sequencia_produtos[] = $r;
+        }
+        else if (strstr($key, 'zz_locucao_deporextra-')!== false) 
+        {
+            $r = new StdClass();
+            $r->fild = $key;
+            $r->genero = 'zz_locucao_depor';
+            $r->sequencia = 'zz_locucao_depor';
+            $r->arquivo = $app->request()->post($key);
+            $sequencia_produtos[] = $r;
+        }
     }
 
 
@@ -290,11 +345,7 @@ $app->post('/oferta', function() use ($app)
     $sequencia = array();
 
     if($app->request()->post('zz_locucao_abertura')!="") $sequencia['zz_locucao_abertura'] = get_arquivo($app->request()->post('zz_locucao_abertura'), 'zz_locucao_abertura', true);
-    //echo "<pre>";
-    //print_r(json_encode($app->request->post()));
-    //echo "</pre>";
-    //exit();
-
+    
     $sequencia_produtos_arquivos = array();
     foreach ($sequencia_produtos as $p)
     {
@@ -321,8 +372,13 @@ $app->post('/oferta', function() use ($app)
     }
 
     if($app->request()->post('zz_locucao_fechamento')!="") $sequencia['zz_locucao_fechamento'] = get_arquivo($app->request()->post('zz_locucao_fechamento'), 'zz_locucao_fechamento', true);
-    
-
+/*
+    echo "<pre>";
+    print_r($sequencia);
+    //print_r($app->request()->post());
+    echo "</pre>";
+    exit();    
+*/
     //validação
     $erros = array();
 
@@ -360,6 +416,14 @@ $app->post('/oferta', function() use ($app)
             {
                 $erros[] = array("campo"=>"preco-real$sufix", "mensagem"=>"Selecione o preço corretamente.");
             }
+
+            if($app->request()->post('zz_locucao_de'.$sufix)!="")
+            {
+                if($app->request()->post('preco-real'.$sufix."-de_por")=="" && $app->request()->post('preco-centavos'.$sufix."-de_por")=="" )
+                {
+                    $erros[] = array("campo"=>"zz_locucao_de$sufix", "mensagem"=>"Selecione o preço De Por corretamente.");
+                }
+            }
         }
     }
 
@@ -388,7 +452,7 @@ $app->post('/oferta', function() use ($app)
     
     /*
     echo "<pre>";
-        print_r($sequencia_produtos);
+        print_r($sequencia);
         echo "</pre>";
     exit();
     */
@@ -416,6 +480,7 @@ $app->post('/oferta', function() use ($app)
         $arquivos->parcelamento = lista_arquivos('zz_locucao_parcelamento');
         $arquivos->precos = lista_arquivos('zz_locucao_preco');
         $arquivos->repeticao = lista_arquivos('zz_locucao_repeticao');
+        $arquivos->depor = lista_arquivos('zz_locucao_depor');
 
         //if(count($sequencia)==0) $sequencia[] = new StdClass();
         $oferta->sequencia = new StdClass();
@@ -457,6 +522,7 @@ $app->post('/oferta', function() use ($app)
 
                 $grupo = new StdClass();
                 $grupo->zz_locucao_produto = $value;
+                $grupo->zz_locucao_de = isset($oferta->sequencia->{'zz_locucao_de'.$sufix})? $oferta->sequencia->{'zz_locucao_de'.$sufix}: null;
                 $grupo->zz_locucao_parcelamento = isset($oferta->sequencia->{'zz_locucao_parcelamento'.$sufix})? $oferta->sequencia->{'zz_locucao_parcelamento'.$sufix}: null;
                 $grupo->{'zz_locucao_preco_real'} = isset($oferta->sequencia->{'preco-real'.$sufix})? $oferta->sequencia->{'preco-real'.$sufix}: null;
                 $grupo->{'zz_locucao_preco_centavos'} = isset($oferta->sequencia->{'preco-centavos'.$sufix})? $oferta->sequencia->{'preco-centavos'.$sufix}: null;
@@ -475,6 +541,24 @@ $app->post('/oferta', function() use ($app)
                     }
                 }
 
+                $grupo->zz_locucao_por = isset($oferta->sequencia->{'zz_locucao_por'.$sufix})? $oferta->sequencia->{'zz_locucao_por'.$sufix}: null;
+                $grupo->zz_locucao_parcelamento_depor = isset($oferta->sequencia->{'zz_locucao_parcelamento'.$sufix.'-de_por'})? $oferta->sequencia->{'zz_locucao_parcelamento'.$sufix.'-de_por'}: null;
+                $grupo->{'zz_locucao_preco_real_depor'} = isset($oferta->sequencia->{'preco-real'.$sufix.'-de_por'})? $oferta->sequencia->{'preco-real'.$sufix.'-de_por'}: null;
+                $grupo->{'zz_locucao_preco_centavos_depor'} = isset($oferta->sequencia->{'preco-centavos'.$sufix.'-de_por'})? $oferta->sequencia->{'preco-centavos'.$sufix.'-de_por'}: null;
+
+                if($grupo->{'zz_locucao_preco_centavos_depor'} !== null)
+                {
+                    $centavos = $grupo->{'zz_locucao_preco_centavos_depor'};
+                    if(strstr($centavos->arquivo, '_sem_e')!==false)
+                    {
+                        $centavos->arquivo = str_replace('_sem_e', '', $centavos->arquivo);
+                        $centavos->nome = str_replace('_sem_e', '', $centavos->nome);
+
+                        $grupo->{'zz_locucao_preco_centavos_depor'} = $centavos;
+                    }
+                }
+
+                $grupo->zz_locucao_deporextra = isset($oferta->sequencia->{'zz_locucao_deporextra'.$sufix})? $oferta->sequencia->{'zz_locucao_deporextra'.$sufix}: null;
 
 
                 $oferta->sequencia->produtos[] = $grupo;

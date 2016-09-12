@@ -9,57 +9,37 @@ do
 done
 
 arquivo=``
-parado="0"
 ultimo=""
 aux=0
 
-# verifica se o nome do arquivo é diferente de vazio
-while [ $? ]; do
-	ultimo=`tac $mplayer_log | grep "Playing " | cut -c 9- | rev | cut -c 2- | rev | head -n1`
-
-	if [ -n "$ultimo" ]; then
-		break
-	fi
-
-	sleep 1
-done
-
 # verifica se o nome do arquivo trocou e adiciona no log
 while [ $? ]; do
-	inicio=`tail -1 $mplayer_log`
+	vazio=`tail -1 $mplayer_log`
+	hora=`date +%d/%m/%Y-%H:%M:%S`
 	temp=`tac $mplayer_log | grep "Playing " | cut -c 9- | rev | cut -c 2- | rev | head -n1`
 
-	if [ "$ultimo" != "$temp" ]; then
-		hora=`date +%d/%m/%Y-%H:%M:%S`
+	if [ -n "$temp" ] && [ "$vazio" == "" ]; then
+		echo "vazio" $hora
+		if [ "$aux" == 1 ]; then
+			echo "gravou" $temp
+			echo $hora $temp >> /var/log/radio/radio.log
 
-		if [ "$parado" != "1" ]; then
-			echo $hora $ultimo
-			echo $hora $ultimo >> /var/log/radio/radio.log
-			
+			tipo=`echo $temp | cut -d "/" -f8`
+            data=`echo $hora | cut -d "-" -f1`
+            hora2=`echo $hora | cut -d "-" -f2`
+            rede=`cat /var/www/config.inc.php | grep "rede" | cut -d "'" -f2`
+            loja=`cat /var/www/config.inc.php | grep "loja" | cut -d "'" -f2`
+            arquivo2=`echo $temp | cut -d "/" -f6`
+            genero=`echo $temp | cut -d "/" -f7`
+            echo "$rede|$loja|$data|$hora2|$tipo|$arquivo2|$genero" >> /var/log/radio/executadas.txt
+
+			aux=0
 		fi
-
-		ultimo=$temp
-		aux=0
-		parado="0"
+	else
+		echo "tocando" $hora $temp
+		aux=1
 	fi
 
-	if [ ! -n "$inicio" ]; then
-		if [ "$aux" == 1 ] && [ -n "$hora" ]; then
-			echo $hora $ultimo
-			echo $hora $ultimo >> /var/log/radio/radio.log
-			parado="1"
-			#ultimo=$arquivo
-		fi
-
-		if [ "$aux" == 0 ] && [ -n "$hora" ]; then
-			hora=`date +%d/%m/%Y-%H:%M:%S`
-		fi
-
-		aux=$((aux + 1))
-		#echo "parad" $aux
-	fi
-
-
-	#echo ${#inicio}
+	#echo $hora $vazio
 	sleep 1
 done

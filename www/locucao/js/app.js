@@ -6,6 +6,7 @@ var fimPlaylist, inicioPlaylist;
     var playlistProdutos = [];
     var playlistIndex = 0;
     
+    $('body').addClass('has-js');
 
     $.datepicker.setDefaults({
       dateFormat: 'dd/mm/yy',
@@ -31,8 +32,8 @@ var fimPlaylist, inicioPlaylist;
     {
       window.setInterval(function() 
       {
-         //atualizaHora();
-      }, 10000);
+         atualizaHora();
+      }, 30000);
     }
 
     function atualizaHora()
@@ -66,11 +67,18 @@ var fimPlaylist, inicioPlaylist;
       {
         var linha = $(this);
         var produto = linha.find('.nome').find('select').val();
-        var parcelamento = linha.find('.parcelamento').find('select').val();
-        var real = linha.find('.real').find('select').val();
-        var centavos = linha.find('.centavos').find('select').val();
+        var de = linha.find('.de').val();
+        var parcelamento = linha.find('.preco .parcelamento').find('select').val();
+        var real = linha.find('.preco .real').find('select').val();
+        var centavos = linha.find('.preco .centavos').find('select').val();
+        var por = linha.find('.por').val();
+        var parcelamentoDepor = linha.find('.row-de-por .parcelamento').find('select').val();
+        var realDepor = linha.find('.row-de-por .real').find('select').val();
+        var centavosDepor = linha.find('.row-de-por .centavos').find('select').val();
+        var extra = linha.find('.row-de-por .extra').val();
 
         if(produto!="") playlistProdutos.push(baseUrl+"/arquivo/zz_locucao_produto_"+produto);
+        if(de!="") playlistProdutos.push(baseUrl+"/arquivo/zz_locucao_depor/"+de);
         if(parcelamento!="") playlistProdutos.push(baseUrl+"/arquivo/zz_locucao_parcelamento/"+parcelamento);
         if(real!="") playlistProdutos.push(baseUrl+"/arquivo/zz_locucao_preco/"+real);
         if(centavos!="") 
@@ -84,6 +92,21 @@ var fimPlaylist, inicioPlaylist;
             playlistProdutos.push(baseUrl+"/arquivo/zz_locucao_preco/"+centavos.replace(".mp3", "_sem_e.mp3"));
           }
         }
+        if(por!="") playlistProdutos.push(baseUrl+"/arquivo/zz_locucao_depor/"+por);
+        if(parcelamentoDepor!="") playlistProdutos.push(baseUrl+"/arquivo/zz_locucao_parcelamento/"+parcelamentoDepor);
+        if(realDepor!="") playlistProdutos.push(baseUrl+"/arquivo/zz_locucao_preco/"+realDepor);
+        if(centavosDepor!="") 
+        {
+          if(realDepor!="")
+          {
+            playlistProdutos.push(baseUrl+"/arquivo/zz_locucao_preco/"+centavosDepor);
+          }
+          else
+          {
+            playlistProdutos.push(baseUrl+"/arquivo/zz_locucao_preco/"+centavosDepor.replace(".mp3", "_sem_e.mp3"));
+          }
+        }
+        if(extra!="") playlistProdutos.push(baseUrl+"/arquivo/zz_locucao_depor/"+extra);
         
       });
 
@@ -156,11 +179,15 @@ var fimPlaylist, inicioPlaylist;
 
       $clone = $('#produtos .produto').first().clone();
 
+      console.log($clone);
+
       $clone.find('.select2-container').remove();
 
       $clone.find('.select2').removeAttr('style');
 
       $clone.find('option').removeAttr('selected');
+
+      $clone.find('.row-de-por').attr('style', 'display:none');
 
       var items = [];
       var temp = [];
@@ -197,7 +224,8 @@ var fimPlaylist, inicioPlaylist;
 
       $clone.find(".select2.produtos").select2({width:'element', placeholder: "Selecione um produto"}).on("change", atualizaSelect);
       $clone.find(".select2.categoria").select2({width:'element'}).on("change", atualizaSelect).on("change", atualizaProdutos);
-      $clone.find(".select2").not(".produtos").not(".categoria").select2({width:'element'}).on("change", atualizaSelect);
+      $clone.find(".select2.de-por").select2({width:'element'}).on("change", atualizaSelect).on("change", atualizaDePor);
+      $clone.find(".select2").not(".produtos, .categoria, .de-por").select2({width:'element'}).on("change", atualizaSelect);
       $clone.find(".remover").click(removerProdutoLista);
 
       atualizaIndexLista();
@@ -257,9 +285,11 @@ var fimPlaylist, inicioPlaylist;
       });
     });
 
-    $(".select2").not(".categoria").select2({width:'element'}).on("change", atualizaSelect).each(atualizaSelect);
+    $(".select2").not(".categoria, .de-por").select2({width:'element'}).on("change", atualizaSelect).each(atualizaSelect);
 
     $(".select2.categoria").select2({width:'element'}).on("change", atualizaSelect).each(atualizaSelect).on("change", atualizaProdutos);
+
+    $(".select2.de-por").select2({width:'element'}).on("change", atualizaSelect).on("change", atualizaDePor).each(atualizaDePor).each(atualizaSelect);
 
     $('input[type=radio][name=repetir]').change(function() 
     {
@@ -275,7 +305,7 @@ var fimPlaylist, inicioPlaylist;
     {
       e.preventDefault();
 
-      $(this).parent().parent().detach();
+      $(this).parent().detach();
 
       atualizaIndexLista();
     }
@@ -303,17 +333,40 @@ var fimPlaylist, inicioPlaylist;
         nome.find('select').attr("id", "zz_locucao_produto-"+index).attr("name", "zz_locucao_produto-"+index);
         nome.find('label').attr("for", "zz_locucao_produto-"+index);
         
-        var parcelas = $( this ).find('.parcelamento');
+        var parcelas = $( this ).find('.preco .parcelamento');
         parcelas.find('select').attr("id", "zz_locucao_parcelamento-"+index).attr("name", "zz_locucao_parcelamento-"+index);
         parcelas.find('label').attr("for", "zz_locucao_parcelamento-"+index);
 
-        var real = $( this ).find('.real');
+        var real = $( this ).find('.preco .real');
         real.find('select').attr("id", "preco-real-"+index).attr("name", "preco-real-"+index);
         real.find('label').attr("for", "preco-real-"+index);
 
-        var centavos = $( this ).find('.centavos');
+        var centavos = $( this ).find('.preco .centavos');
         centavos.find('select').attr("id", "preco-centavos-"+index).attr("name", "preco-centavos-"+index);
         centavos.find('label').attr("for", "preco-centavos-"+index);
+
+        /**diferenciar de por**/
+        var de = $( this ).find('.preco .de');
+        de.attr("id", "zz_locucao_de-"+index).attr("name", "zz_locucao_de-"+index);
+        //console.log(de.val());
+
+        var por = $( this ).find('.row-de-por .por');
+        por.attr("id", "zz_locucao_por-"+index).attr("name", "zz_locucao_por-"+index);
+
+        parcelas = $( this ).find('.row-de-por .parcelamento');
+        parcelas.find('select').attr("id", "zz_locucao_parcelamento-"+index+"-de_por").attr("name", "zz_locucao_parcelamento-"+index+"-de_por");
+        parcelas.find('label').attr("for", "zz_locucao_parcelamento-"+index+"-de_por");
+
+        real = $( this ).find('.row-de-por .real');
+        real.find('select').attr("id", "preco-real-"+index+"-de_por").attr("name", "preco-real-"+index+"-de_por");
+        real.find('label').attr("for", "preco-real-"+index+"-de_por");
+
+        centavos = $( this ).find('.row-de-por .centavos');
+        centavos.find('select').attr("id", "preco-centavos-"+index+"-de_por").attr("name", "preco-centavos-"+index+"-de_por");
+        centavos.find('label').attr("for", "preco-centavos-"+index+"-de_por");
+
+        var extra = $( this ).find('.row-de-por .extra');
+        extra.attr("id", "zz_locucao_deporextra-"+index).attr("name", "zz_locucao_deporextra-"+index);
         
       });
     }
@@ -394,6 +447,39 @@ var fimPlaylist, inicioPlaylist;
        });
       */
     }
+
+    function atualizaDePor()
+    {
+      //console.log($(this).parent().parent().parent()); 
+
+      $t = $(this).parent().parent().parent().find(".row-de-por");
+      $de = $(this).parent().parent().find(".de");
+      $por = $t.find(".por");
+
+      $t.find(".extra").val("");
+
+      if($(this).val() != "")
+      {
+        $de.val($de.data("valor"));
+        $por.val($por.data("valor"));
+
+        if($(this)[0].selectedIndex>1)
+        {
+          $t.find(".extra").val($(this).val());
+        }
+
+        $t.find(".select2").select2("destroy");
+        $t.show();
+        $t.find(".select2").select2({width:'element'}).on("change", atualizaSelect).each(atualizaSelect);
+      }
+      else
+      {
+        $t.hide();
+        $de.val("");
+        $por.val("");
+        $t.find(".select2").val("");
+      }
+    } 
 
     $( "#dialog-message" ).dialog({
       modal: true,

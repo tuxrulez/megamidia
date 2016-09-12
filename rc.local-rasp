@@ -16,5 +16,15 @@ _IP=$(hostname -I) || true
 if [ "$_IP" ]; then
   printf "My IP address is %s\n" "$_IP"
 fi
-/usr/local/bin/radio.sh 
+/etc/init.d/rtcdev start
+modprobe i2c-bcm2708
+modprobe i2c-dev
+modprobe rtc-ds1307
+
+hwclock -s
+hwclock -w
+echo "A Data da Maquina : `date`"
+
+/usr/local/bin/radio.sh >/dev/null 2>&1 &
+
 exit 0

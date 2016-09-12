@@ -3,6 +3,8 @@ versao=`cat /etc/VERSAO`
 
 apt-get -y install mplayer mplayer-gui alsa-base alsa-utils pulseaudio mpg123 vim git ntpdate mysql-server mysql-client screen htop rcconf dialog mplayer apache2 php5-mysql mp3info zip php5 vim php5-cli rsync curl git unzip 
 
+#Instalar o ffmpeg
+
 mkdir -p /usr/local/radio/generos/comercial
 mkdir -p /usr/local/radio/generos/musical
 mkdir -p /var/log/radio
@@ -31,7 +33,7 @@ if [ $versao == "raspberry" ]; then
 	cp -a rc.local-rasp /etc/rc.local
 	cp -a setup-rasp /usr/local/bin/setup.sh
 	cp -a radio-update.body-rasp /usr/local/etc/radio-update.body	
-	/usr/local/bin/raspi-config --expand-rootfs
+	/usr/bin/raspi-config --expand-rootfs
 fi
 
 if [ $versao == "banana" ]; then

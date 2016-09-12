@@ -30,7 +30,14 @@ while [ $? ]; do
 		
 		echo $hora $arquivo
 		echo $hora $arquivo >> /var/log/radio/radio.log
-
+                tipo=`echo $arquivo | cut -d "/" -f8`
+		data=`echo $hora | cut -d "-" -f1`
+		hora2=`echo $hora | cut -d "-" -f2`
+		rede=`cat /var/www/config.inc.php | grep "rede" | cut -d "'" -f2`
+		loja=`cat /var/www/config.inc.php | grep "loja" | cut -d "'" -f2`
+		arquivo2=`echo $arquivo | cut -d "/" -f6`
+		genero=`echo $arquivo | cut -d "/" -f7`
+                echo "$rede|$loja|$data|$hora2|$tipo|$arquivo2|$genero" >> /var/log/radio/executadas.txt
 		arquivo=$temp
 	fi
 	

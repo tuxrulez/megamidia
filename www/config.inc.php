@@ -1,4 +1,4 @@
 <?php
-$rede = 'Pao_Minuto';
-$loja = 'Lj_0129';
+$rede = 'extrasuper';
+$loja = 'Lj_1303';
 ?>
