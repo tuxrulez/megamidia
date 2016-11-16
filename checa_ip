@@ -1,0 +1,24 @@
+#!/bin/bash
+
+x=`pidof -x /usr/local/bin/checa_ip`
+if [ $? == 0 ]; then
+	exit 0
+else
+hora=`cat /usr/local/bin/radio-update.sh | grep "hora=" | cut -d "=" -f2 | cut -d '"' -f2`
+
+	chmod 775 -R /usr/local/radio/generos
+	chown radiob. -R /usr/local/radio/generos
+
+if [ -f /usr/sbin/sntp ]; then
+        sntp -P no -r $hora
+        hwclock -w
+else
+        ntpdate $hora
+fi
+x=`ping -c1 www.terra.com.br`
+if [ $? == 0 ]; then
+        wget http://ipecho.net/plain -O - -q > /tmp/ip_externo
+else
+        	exit 0
+	fi
+fi
