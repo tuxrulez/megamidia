@@ -1,0 +1,8 @@
+apt-get -y install  alsa-base alsa-utils pulseaudio mpg123 vim git ntpdate mysql-server mysql-client screen htop rcconf dialog mplayer apache2 php5-mysql mp3info zip php5 vim php5-cli rsync curl git unzip
+
+mplayer
+
+apt-get install libav-tools 
+apt-get install deb-multimedia-keyring
+htop
+
